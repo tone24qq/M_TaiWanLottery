@@ -21,3 +21,6 @@ api_router.include_router(bingo.router, prefix="/bingo", tags=["賓果賓果"])
 api_router.include_router(scraper.router, prefix="/scraper", tags=["爬蟲"])
 api_router.include_router(statistics.router, prefix="/stats", tags=["統計分析"])
 api_router.include_router(ml.router, prefix="/ml", tags=["ML 預測"])
+
+from taiwan_lottery.api.v1.endpoints import layout_prediction
+api_router.include_router(layout_prediction.router, prefix="/layout", tags=["表格 AI 討論"])
