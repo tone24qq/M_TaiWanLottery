@@ -239,3 +239,86 @@ node --check taiwan_lottery/static/js/layout.js
 可重現性、holdout 隔離、四個 learned model、FastAPI import/lifespan/頁面、
 PostgreSQL round trace、揭露後 immutable prediction，以及合成圖片實際 Tesseract 辨識。
 使用者附的反光／遮擋實拍照片仍需在 UI 校正，未宣稱自動 OCR 能準確讀出所有格子。
+
+## OCR 多視覺模型升級
+
+本次只擴充已開格辨識，保留既有 layout prediction/discussion 核心。
+來源與授權見 [THIRD_PARTY_MODELS.md](THIRD_PARTY_MODELS.md)。
+
+- 統一 recognizer 及 lazy singleton registry：Tesseract、EasyOCR、Paddle 三個
+  recognition model、TrOCR small/base、自製 PyTorch CTC／segmented digit CNN。
+  只有 **Tesseract + EasyOCR 已實際載入 pretrained weights 並推論**；
+  Paddle / TrOCR 權重來源被網路封鎖，保留 adapter，回報 model_missing。
+- 每格產生 RGB、灰階、CLAHE、Otsu、adaptive、inverted、sharpened、denoise、
+  glare-reduced 九種版本，先在 engine 內融合。Tesseract 使用 multipage TIFF，
+  一次 subprocess 處理九個版本。Top-K 只保留實際產生的候選，不捏造替代答案。
+- 獨立視覺 CellStateClassifier 用亮度、飽和度、texture、edge 等特徵判定
+  OPENED / UNOPENED / UNCERTAIN，不參考 OCR。只有 OPENED 辨識數字，其餘保持 unknown。
+  這是保守 heuristic，尚無訓練完成的 state CNN。
+- 無真實 validation 時採明示的等 family prior；同系 Paddle、TrOCR 及兩個
+  Digit 模型共享家族影響力。不同 augmentation 不各拿一票。
+- Global Hungarian 僅使用 OPENED 格已有的合法候選，保留 abstention dummy，
+  不靠缺號猜未開格。無支持候選不得硬分配。低於 .15 abstain、低於 .65 等情形醒目提示，
+  是工程 heuristic，不是正確率；保留 raw / ensemble / constrained 結果及修正原因。
+- UI 可只看爭議格，查看引擎候選、最終分數、人工狀態、約束修正、載入時間、
+  per-cell / whole-board latency、RSS，並人工標記六種拍攝場景。
+
+### 人工資料、fine-tune 與 benchmark
+
+先執行 alembic upgrade head（新增 c102_digit_dataset）。
+PostgreSQL layout_digit_dataset 保存 crop 相對路徑、raw outputs、確認標籤／狀態、
+尺寸、source board ID、原圖 hash、品質／場景。勾選保留才保存 crops，不保存原始整張照片。
+私有 crop 與模型皆在忽略的資料目錄。第一版未建立自動過期、認證或多人管理，
+適用於受信任的本機開發用途。
+
+同一實體表格，包括重拍及相近 crop，必須填寫**相同 source board ID**。
+同來源 ID 或同原圖 hash 的資料 union 後整組拆分，絕不隨機切 cell。
+不同照片的 hash 無法自動證明是不同實體表格，來源標註不可省略。
+
+少於 500 labelled OPENED cells 為 not_ready；500～1999 experimental；
+至少 2000 benchmark_eligible，仍不是品質保證，另需至少三個獨立來源。
+校正 API 每跨 500 格可排程本機 fine-tune（auto_train=false 可停用）。
+CTC 及 segmented CNN 都有實際訓練流程，不使用 MNIST 或固定 1～100 classifier。
+checkpoint 使用 weights_only=True 及 SHA-256 驗證。
+實驗模型預設不投票；至少 2000 格且獨立 test 優於現成 OCR 才可 promote。
+LAYOUT_OCR_EXPERIMENTAL_DIGIT=1 僅供實驗，不作正式準確率證據。
+
+新增 API（前綴 /api/v1/layout）：
+
+    GET  /ocr/models
+    POST /recognize            原 multipart，新增 retain=false
+    POST /ocr/corrections      capture_id, source_board, cells[index,state,label,scenarios], auto_train
+    GET  /ocr/dataset
+    POST /ocr/digit/train
+    GET  /ocr/digit/jobs/{uuid}
+    POST /ocr/benchmark
+    GET  /ocr/benchmark
+
+benchmark 使用真實人工標記資料，依 source-group 分 train/validation/test，
+權重及 engine 組合在 validation 選定後才評估 test，保存 split IDs。
+比較單模型、ensemble 及 constrained ensemble，正式部署仍須遵守全表不重複。
+報告包含 exact accuracy、CER、Top-3 recall、整表全對率、錯格數、約束前重複數、
+修正數、原本正確卻被約束改錯的數量，以及六種拍攝場景。
+至少 50 個 validation cells、三個 validation source boards，才保存校正及最佳部署 profile；
+版本／artifact fingerprint 不符時停用舊 profile。不足門檻只報結果，不自動提升。
+
+**尚無真實照片 accuracy 結論**，目前沒有實證最佳 ensemble。
+本機合成 2×2 / 44px 字體 smoke（不是正式 accuracy）：
+Tesseract 原始候選 4/4、EasyOCR 3/4、保守融合填入 3/4、1 格 abstain；
+不把較差或 abstain 的結果美化為提升。
+該次 cold 整表約 3.37 秒，含 EasyOCR 載入；warm 單格 Tesseract 約 172ms、
+EasyOCR 約 128ms，RSS 約 419MiB，EasyOCR 權重約 14.44MiB。
+這不是 100 格 Windows 實測，不作線性速度保證。
+
+Paddle / TrOCR 因權重無法取得，模型大小與 latency 未測。
+Digit 尚無足夠真實資料，正式 accuracy / 選型 not_ready。
+兩種 Digit 架構已用微型合成資料實際做 1-epoch CPU 訓練／推論 smoke，不能作 promotion。
+反光遮住筆畫、半刮開、連字、錯誤角點、極低解析仍可能出錯或 abstain，須人工校正。
+
+    pip install -r requirements-ocr.txt
+    python -m taiwan_lottery.ml.layout.vision.prepare easyocr
+    LAYOUT_TEST_DATABASE=1 SCRAPER_ENABLED=false OMP_NUM_THREADS=2 python -m pytest -q tests
+
+Windows 須另裝 Tesseract，並在 shell 設定環境變數。
+已檢查指定套件的 Windows/Python 3.12 wheel resolution，未在 Windows 執行，
+也未完整驗證該平台全部 transitive dependencies。

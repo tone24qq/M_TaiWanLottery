@@ -4,12 +4,9 @@ import shutil
 import numpy as np
 
 
-def recognize(data, rows, cols, corners=None):
+def rectify(data, rows, cols, corners=None):
     import cv2
-    import pytesseract
     from PIL import Image
-    if not shutil.which("tesseract"):
-        return {"status":"not_ready","reason":"tesseract_binary_missing"}
     with Image.open(BytesIO(data)) as image:
         if image.width*image.height > 16_000_000:
             raise ValueError("Image exceeds 16 megapixels")
@@ -46,20 +43,13 @@ def recognize(data, rows, cols, corners=None):
         raise ValueError("Grid exceeds OCR pixel budget")
     dst = np.float32([[0,0],[width-1,0],[width-1,height-1],[0,height-1]])
     warped = cv2.warpPerspective(image, cv2.getPerspectiveTransform(points,dst),(width,height))
-    cells, proposals = [], []
-    for r in range(rows):
-        for c in range(cols):
-            crop = warped[r*80+10:(r+1)*80-10,c*80+10:(c+1)*80-10]
-            gray = cv2.cvtColor(crop,cv2.COLOR_BGR2GRAY)
-            gray = cv2.resize(gray,None,fx=2,fy=2)
-            _, gray = cv2.threshold(gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-            text = pytesseract.image_to_string(gray,config="--psm 6 -c tessedit_char_whitelist=0123456789",timeout=3).strip()
-            number = int(text) if text.isdigit() and 1<=int(text)<=rows*cols else None
-            cells.append(number)
-            proposals.append({"row":r+1,"col":c+1,"raw":text,"value":number,
-                              "needs_confirmation":True})
-    duplicate = {x for x in cells if x is not None and cells.count(x)>1}
-    cells = [None if x in duplicate else x for x in cells]
-    return {"status":"needs_confirmation","rows":rows,"cols":cols,"cells":cells,
-            "proposals":proposals,"duplicate_values":sorted(duplicate),
-            "corners":points.tolist(),"warning":"OCR is a proposal, not ground truth. Correct every visible cell; leave covered cells blank."}
+    return warped, points.tolist()
+
+
+def recognize(data, rows, cols, corners=None, retain=False):
+    from .vision.service import recognize_board
+    rectified=rectify(data,rows,cols,corners)
+    if isinstance(rectified,dict):
+        return rectified
+    warped,points=rectified
+    return recognize_board(data,warped,rows,cols,points,retain=retain)

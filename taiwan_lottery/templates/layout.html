@@ -14,8 +14,23 @@
   <canvas id="photoCanvas" class="mt-2" style="max-width:100%;touch-action:manipulation" hidden></canvas>
   <div class="d-flex gap-2 mt-2"><button id="resetCorners" class="btn btn-sm btn-outline-secondary">清除角點</button>
     <button id="recognize" class="btn btn-outline-primary">本機圖片辨識</button></div>
+  <label class="form-check mt-2"><input id="retainOCR" class="form-check-input" type="checkbox">
+    <span class="form-check-label">保留本次格子圖片供人工校正與本機訓練（不存 Git）</span></label>
   <p id="ocrStatus" class="small mt-2">OCR 只提供草稿；遮蓋與反光位置請留空，所有可見數字須人工校正。</p>
 </div>
+<section id="ocrReview" hidden class="mb-3">
+<h2 class="h5">辨識校正</h2><p id="ocrPerformance" class="small"></p>
+<label><input id="disputedOnly" type="checkbox"> 只看有爭議的格子</label>
+<div class="table-responsive" style="max-height:360px"><table class="table table-sm">
+<thead><tr><th>位置</th><th>開格狀態（人工確認）</th><th>辨識值 / 分數</th><th>模型結果</th><th>全表校正</th></tr></thead><tbody id="ocrCells"></tbody></table></div>
+<input id="ocrSourceBoard" class="form-control mb-2" placeholder="同一實體表格請固定使用相同 source board ID，避免訓練/測試洩漏">
+<label class="small">人工場景標註（可多選，用於獨立 benchmark）<select id="ocrScenarios" multiple class="form-select form-select-sm">
+<option value="clean">clean</option><option value="glare">glare</option><option value="scratch">scratch</option>
+<option value="blur">blur</option><option value="perspective">perspective</option><option value="low-light">low-light</option></select></label>
+<button id="saveCorrections" class="btn btn-outline-primary">保存已人工確認的格子與標籤</button>
+<button id="ocrBenchmark" class="btn btn-outline-secondary">真實照片 benchmark</button>
+<pre id="ocrBenchmarkResult" class="small mt-2" style="white-space:pre-wrap"></pre>
+</section>
 <div class="overflow-auto mb-3"><div id="grid" style="display:grid;gap:4px;min-width:350px"></div></div>
 <label class="form-check mb-3"><input id="confirmed" type="checkbox" class="form-check-input">
   <span class="form-check-label">已確認尺寸、可見數字及未開格（空白）</span></label>

@@ -7,7 +7,8 @@ import pytest
 pytestmark = pytest.mark.skipif(os.getenv("LAYOUT_TEST_DATABASE")!="1",reason="requires migrated local PostgreSQL")
 
 
-def test_layout_api_storage_evaluation_resolution_and_ocr():
+def test_layout_api_storage_evaluation_resolution_and_ocr(tmp_path,monkeypatch):
+    monkeypatch.setenv("LAYOUT_OCR_DATA_DIR",str(tmp_path))
     asyncio.run(_scenario())
 
 
@@ -57,10 +58,22 @@ async def _scenario():
                         draw.text((i%2*120+40,i//2*120+30),str(i+1),fill="black",font=font)
                     buffer=BytesIO();image.save(buffer,format="PNG")
                     r=await c.post("/api/v1/layout/recognize",files={"file":("grid.png",buffer.getvalue(),"image/png")},
-                        data={"rows":"2","cols":"2","corners":"[[0,0],[239,0],[239,239],[0,239]]"})
+                        data={"rows":"2","cols":"2","retain":"true","corners":"[[0,0],[239,0],[239,239],[0,239]]"})
                     assert r.status_code==200,r.text
                     assert r.json()["status"]=="needs_confirmation"
                     assert r.json()["cells"]==[1,2,3,4],r.json()
+                    capture=r.json()["capture_id"]
+                    r=await c.post("/api/v1/layout/ocr/corrections",json={
+                        "capture_id":capture,"source_board":"integration-ocr-board",
+                        "auto_train":False,"cells":[{"index":i,"state":"OPENED","label":i+1,
+                                                    "scenarios":["clean"]} for i in range(4)]})
+                    assert r.status_code==200,r.text
+                    assert r.json()["saved"]==4 and r.json()["stage"]=="not_ready"
+                    r=await c.get("/api/v1/layout/ocr/dataset")
+                    assert r.status_code==200 and r.json()["labelled_cells"]>=4
+                    r=await c.post("/api/v1/layout/ocr/digit/train")
+                    assert r.status_code==200 and r.json()["status"]=="not_ready"
+
         finally:
             app.dependency_overrides.pop(get_db,None)
             await session.close()

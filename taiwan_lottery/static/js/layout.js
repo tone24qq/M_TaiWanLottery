@@ -1,7 +1,7 @@
 /* Offline OCR is a draft. Never insert server strings as HTML. */
 (() => {
   const el = id => document.getElementById(id);
-  let corners = [], image = null, runId = null, busy = false;
+  let corners = [], image = null, runId = null, busy = false, ocrResult = null;
   const coordinate = x => x ? 'R'+x.row+'C'+x.col : '—';
   const dimensions = () => ({rows: Number(el('rows').value), cols: Number(el('cols').value)});
   function build(cells) {
@@ -40,7 +40,7 @@
       finally {busy=false; el(id).disabled=false;}
     };
   }
-  action('create',()=>build());
+  action('create',()=>{build();ocrResult=null;el('ocrReview').hidden=true;});
   el('photo').onchange=()=>{
     const file=el('photo').files[0]; if(!file) return;
     const url=URL.createObjectURL(file); image=new Image();
@@ -64,10 +64,11 @@
     if(corners.length!==0 && corners.length!==4) throw Error('請選滿四個角或清除角點');
     const dims=dimensions(), data=new FormData();data.append('file',file);
     data.append('rows',dims.rows);data.append('cols',dims.cols);
+    data.append('retain',el('retainOCR').checked);
     if(corners.length===4) data.append('corners',JSON.stringify(corners));
     const result=await api('/recognize',data);
     if(result.status!=='needs_confirmation') throw Error(result.reason);
-    build(result.cells);el('ocrStatus').textContent='辨識草稿已填入。重複值已清空；請人工校正。';
+    build(result.cells);ocrResult=result;renderOCR();el('ocrStatus').textContent='辨識草稿已填入；未開/不確定格保持空白。請核對每格及全表校正。';
   });
   action('predict',async()=>{
     if(!el('confirmed').checked) throw Error('請先確認表格');
@@ -111,5 +112,46 @@
   }
   action('evaluate',async()=>showEvaluation(await api('/evaluation',{...dimensions(),max_folds:8})));
   action('getEvaluation',async()=>showEvaluation(await api('/evaluation?'+new URLSearchParams(dimensions()))));
+
+  function renderOCR() {
+    if(!ocrResult) return;
+    el('ocrReview').hidden=false;el('ocrCells').replaceChildren();
+    const perf=ocrResult.performance;
+    el('ocrPerformance').textContent='整表 '+(perf.whole_board_ms/1000).toFixed(2)+' 秒；平均每格 '+perf.per_cell_ms.toFixed(0)+' ms；記憶體 '+(perf.rss_bytes ? (perf.rss_bytes/1048576).toFixed(1)+' MiB' : '未提供')+'。分數未校準，不是正確率。';
+    ocrResult.proposals.forEach((p,index)=>{
+      if(el('disputedOnly').checked && !p.disputed) return;
+      const tr=document.createElement('tr');if(p.disputed)tr.className='table-warning';
+      const td=document.createElement('td');td.textContent=coordinate(p);tr.append(td);
+      const state=document.createElement('td'),select=document.createElement('select');select.className='form-select form-select-sm';select.dataset.index=index;
+      ['OPENED','UNOPENED','UNCERTAIN'].forEach(value=>{const opt=document.createElement('option');opt.value=value;opt.textContent=value;select.append(opt);});
+      select.value=p.manualState || p.state;select.onchange=()=>{p.manualState=select.value;el('confirmed').checked=false;};
+      state.append(select);tr.append(state);
+      const values=[String(p.value ?? 'unknown')+' / '+p.confidence.toFixed(3),
+        p.raw_engines.map(x=>x.engine+': '+(x.candidates.map(c=>c.value+' ('+c.score.toFixed(2)+')').join(' / ')||x.status)).join('; '),
+        p.corrected ? p.correction_reason : '—'];
+      values.forEach(value=>{const cell=document.createElement('td');cell.textContent=value;tr.append(cell);});
+      el('ocrCells').append(tr);
+    });
+    const engines=ocrResult.engines.map(x=>x.engine+': '+x.status+'（載入 '+x.load_seconds.toFixed(2)+' 秒）').join('; ');
+    el('ocrStatus').textContent=engines;
+  }
+  el('disputedOnly').onchange=renderOCR;
+  action('saveCorrections',async()=>{
+    if(!ocrResult?.capture_id) throw Error('此照片未保留格子圖片，請勾選保留並重新辨識');
+    if(!el('confirmed').checked) throw Error('請先確認數字與開格狀態');
+    const b=board();
+    if(b.rows!==ocrResult.rows || b.cols!==ocrResult.cols) throw Error('尺寸已變更，請重新辨識');
+    const source=el('ocrSourceBoard').value.trim();if(!source) throw Error('請填寫實體表格來源 ID');
+    const cells=ocrResult.proposals.map((p,index)=>({index,label:b.cells[index],
+      state:b.cells[index]!==null ? 'OPENED' : (p.manualState || p.state),
+      scenarios:Array.from(el('ocrScenarios').selectedOptions,o=>o.value)}));
+    const r=await api('/ocr/corrections',{capture_id:ocrResult.capture_id,source_board:source,cells,auto_train:true});
+    el('ocrBenchmarkResult').textContent=JSON.stringify(r,null,2);
+  });
+  action('ocrBenchmark',async()=>{
+    const r=await api('/ocr/benchmark',{});
+    el('ocrBenchmarkResult').textContent=JSON.stringify(r,null,2);
+  });
+
   build();
 })();

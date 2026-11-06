@@ -24,3 +24,6 @@ api_router.include_router(ml.router, prefix="/ml", tags=["ML 預測"])
 
 from taiwan_lottery.api.v1.endpoints import layout_prediction
 api_router.include_router(layout_prediction.router, prefix="/layout", tags=["表格 AI 討論"])
+
+from taiwan_lottery.api.v1.endpoints import layout_ocr
+api_router.include_router(layout_ocr.router, prefix="/layout", tags=["表格圖片辨識"])

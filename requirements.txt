@@ -40,3 +40,6 @@ pytesseract>=0.3.10
 lightgbm>=4.3
 catboost>=1.2.5
 pytest>=8.0
+
+# Portable OCR process-memory telemetry (also Windows)
+psutil>=5.9

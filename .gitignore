@@ -41,3 +41,7 @@ nul
 # Database
 *.db
 *.sqlite3
+
+# OCR model weights, retained cell crops and human-label artifacts
+/model_artifacts/layout_ocr/
+/model_artifacts/layout_digit_dataset/

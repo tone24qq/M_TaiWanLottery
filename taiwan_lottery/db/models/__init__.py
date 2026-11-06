@@ -18,3 +18,5 @@ __all__ = [
 ]
 
 from taiwan_lottery.db.models.layout import LayoutHistory, LayoutRun
+
+from taiwan_lottery.db.models.layout_digit import LayoutDigitSample

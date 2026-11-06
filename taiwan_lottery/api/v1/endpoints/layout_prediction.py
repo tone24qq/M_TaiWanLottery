@@ -144,7 +144,7 @@ async def resolve(run_id: int, body: Resolution, db: AsyncSession=Depends(get_db
 
 @router.post("/recognize")
 async def image_recognition(file: UploadFile=File(...), rows: int=Form(...),
-                            cols: int=Form(...), corners: str | None=Form(None)):
+                            cols: int=Form(...), corners: str | None=Form(None), retain: bool=Form(False)):
     if rows<1 or cols<1 or rows>100 or cols>100 or rows*cols>400:
         raise HTTPException(422,"Invalid dimensions")
     data = await file.read(8*1024*1024+1)
@@ -152,6 +152,6 @@ async def image_recognition(file: UploadFile=File(...), rows: int=Form(...),
         raise HTTPException(413,"Image exceeds 8 MiB")
     try:
         points = json.loads(corners) if corners else None
-        return await run_in_threadpool(compute,recognize,data,rows,cols,points)
+        return await run_in_threadpool(compute,recognize,data,rows,cols,points,retain)
     except (ValueError,TypeError,RuntimeError,OSError) as exc:
         raise HTTPException(422,str(exc))
