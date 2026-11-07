@@ -51,3 +51,7 @@ nul
 /debug/layout_real/
 /debug/real_image_*/
 /layout_real_3_images.zip
+
+# Private complete boards and answer-bearing blind trial artifacts
+/debug/layout_position_blind/
+/tests/fixtures/layout_position_private/

@@ -367,3 +367,9 @@ fixture JSON 是圖記錄陣列：image（路徑可自行命名）、rows、cols
 validation_summary.json。私有 acceptance 按每張檢查不低於 baseline、未開格 false-number=0，
 並檢查全體約束後不低於同一 abstain 政策下的約束前；個別圖片的損失仍完整呈現。
 CI 沒有私有圖片時明確 skip，不能宣稱在 GitHub 跑過實拍 regression。
+
+### 指定數字位置的 blind backtest
+
+新增獨立離線 evaluator，固定遮蔽 50%，target 永遠 hidden。Predictor 子程序只讀 sanitized request / train-only bundle；預測封存後 scorer 才讀答案。沒有改動現有 OCR 或位置模型。本地完整歷史 corpus 目前為空，因此真實命中率仍 `not_ready`，不能以 unit fixtures 宣稱模型有效。
+
+流程、資料規格、重跑指令與誠實空資料結果見 [blind backtest 報告](docs/layout-position-blind-backtest.md)。
