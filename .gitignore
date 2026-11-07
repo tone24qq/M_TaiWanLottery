@@ -55,3 +55,7 @@ nul
 # Private complete boards and answer-bearing blind trial artifacts
 /debug/layout_position_blind/
 /tests/fixtures/layout_position_private/
+
+# Manufacturing workbooks, frozen answers and per-trial prediction artifacts
+/debug/layout_manufacturing/
+/tests/fixtures/layout_manufacturing_private/

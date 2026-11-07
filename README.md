@@ -373,3 +373,9 @@ CI 沒有私有圖片時明確 skip，不能宣稱在 GitHub 跑過實拍 regres
 新增獨立離線 evaluator，固定遮蔽 50%，target 永遠 hidden。Predictor 子程序只讀 sanitized request / train-only bundle；預測封存後 scorer 才讀答案。沒有改動現有 OCR 或位置模型。本地完整歷史 corpus 目前為空，因此真實命中率仍 `not_ready`，不能以 unit fixtures 宣稱模型有效。
 
 流程、資料規格、重跑指令與誠實空資料結果見 [blind backtest 報告](docs/layout-position-blind-backtest.md)。
+
+### 製造 Excel 的 Calc blind baseline
+
+使用者另提供製造 XLSX，本輪依其原始 `RAND()`／`RANK()` 公式，由 LibreOffice Calc 實際硬重算；不是 Python 製造排列。固定 160 刮、10×16、target=73、公開 80 格。40 張訓練盤、5 張工程盤，另有首輪及 fresh 各 1,000 張 × 10 masks；輸出封存後才開答案評分。
+
+Calc 與 Microsoft Excel 的 RAND 實作可能不同，不能宣稱 Excel-native 亂數序列重現。模型未因 test 答案調整；方法、隔離協定與實測結果見 [製造機制 blind backtest](docs/layout-manufacturing-blind-backtest.md)。

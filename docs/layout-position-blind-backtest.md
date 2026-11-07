@@ -1,5 +1,7 @@
 # 指定數字位置預測：blind baseline
 
+後續使用者另提供製造 XLSX，依原 RAND/RANK 公式的 Calc 重算實測見 [製造機制報告](layout-manufacturing-blind-backtest.md)。本頁保留當時完整歷史 corpus 為空的紀錄；兩者資料來源不同。
+
 2026-11-07。依本輪追加指示，固定 **遮蔽 50% / 揭露 50%**，target 永遠 hidden；本輪沒有執行其他揭露比例。基準模型為 work HEAD `28beeb292ecb11dc1dda0d7529f6aae64e80c956`，模型、predictor、consensus、assignment、registry 與原有 backtesting 原始碼經 SHA-256 / git 原文比對，未修改。OCR 主流程亦未修改。
 
 ## 實際結果：資料不足，無法評分
