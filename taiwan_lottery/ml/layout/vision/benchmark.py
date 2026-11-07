@@ -83,7 +83,7 @@ def score(samples,engine_names=None,constrained=False,calibration=None):
 
 def benchmark(samples):
     from .dataset import grouped_split
-    samples=[s for s in samples if not s.get("synthetic",False)]
+    samples=[s for s in samples if not s.get("synthetic",False) and s.get("split") not in ("regression","regression_only")]
     split=grouped_split(samples)
     if not split["validation"] or not split["test"]:
         return {"status":"not_ready","reason":split.get("reason","missing_real_validation_test"),

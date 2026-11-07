@@ -5,6 +5,7 @@ import hashlib
 def grouped_split(samples):
     # Union by physical board ID OR exact original image hash (even if a user
     # accidentally assigns a second board ID). Never split cells independently.
+    samples=[s for s in samples if s.get("split") not in ("test","regression","regression_only")]
     parent={}
     def find(x):
         parent.setdefault(x,x)
@@ -33,5 +34,5 @@ def grouped_split(samples):
 
 
 def stage(samples):
-    count=sum(s.get("label") is not None and s.get("state")=="OPENED" for s in samples)
+    count=sum(s.get("label") is not None and s.get("state")=="OPENED" for s in samples if s.get("split") not in ("test","regression","regression_only"))
     return "not_ready" if count<500 else "experimental" if count<2000 else "benchmark_eligible"

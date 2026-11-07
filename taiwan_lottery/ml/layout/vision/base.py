@@ -41,6 +41,12 @@ class BaseCellRecognizer(ABC):
             getattr(self,"artifact_digest",None)],sort_keys=True).encode()).hexdigest()
 
     def metadata(self):
-        return {"fingerprint":self.fingerprint(),"version":getattr(self,"version",None),"engine":self.name,"family":self.family,"status":self.status,
+        flags=getattr(self,"readiness",{})
+        strict_ready=all(flags.get(k,False) for k in
+                         ("package_installed","model_downloaded","checksum_verified","license_verified","inference_tested"))
+        return {**flags,"ready":strict_ready and self.status!="benchmark_only" and self.status=="ready",
+                "model_version":getattr(self,"model_version",None),"artifact_sha256":getattr(self,"artifact_sha256",None),
+                "readiness":flags,"runtime_policy":"benchmark_only" if self.status=="benchmark_only" else "runtime",
+                "fingerprint":self.fingerprint(),"version":getattr(self,"version",None),"engine":self.name,"family":self.family,"status":self.status if self.status!="ready" or strict_ready else "not_ready",
                 "reason":self.reason,"load_seconds":self.load_seconds,
                 "artifact_bytes":self.artifact_bytes}

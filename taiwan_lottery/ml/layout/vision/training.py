@@ -123,7 +123,7 @@ def train(samples,job_id,epochs=5):
     job=root/("training-"+job_id+".json")
     started=time.perf_counter()
     try:
-        samples=[s for s in samples if s["label"] is not None and s["state"]=="OPENED"]
+        samples=[s for s in samples if s["label"] is not None and s["state"]=="OPENED" and s.get("split") not in ("test","regression","regression_only")]
         readiness=stage(samples);split=grouped_split(samples)
         if readiness=="not_ready" or not split["validation"] or not split["test"]:
             report={"status":"not_ready","reason":"requires_500_cells_and_three_source_boards"}

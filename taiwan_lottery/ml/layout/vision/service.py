@@ -1,4 +1,4 @@
-"""Recognize OPENED cells only; fail engines individually; keep all evidence."""
+"""Recognize visible/uncertain cells, suppress untouched covers, retain evidence."""
 from pathlib import Path
 from collections import Counter
 import hashlib
@@ -9,7 +9,7 @@ import uuid
 import cv2
 import numpy as np
 from .registry import engines, model_root
-from .preprocess import variants, CellStateClassifier
+from .preprocess import variants, CellStateClassifier,cell_views
 from .consensus import RecognitionConsensus, constrain
 from .base import EngineResult
 
@@ -40,37 +40,45 @@ def recognize_board(original,warped,rows,cols,corners,retain=False):
     for row in range(rows):
         for col in range(cols):
             index=row*cols+col
-            bgr=warped[row*80+6:(row+1)*80-6,col*80+6:(col+1)*80-6]
-            rgb=cv2.cvtColor(bgr,cv2.COLOR_BGR2RGB)
+            rgb,views,margins=cell_views(warped,row,col)
+            bgr=cv2.cvtColor(rgb,cv2.COLOR_RGB2BGR)
             state=classifier.classify(rgb)
             outputs=[]
-            if state["state"]=="OPENED":
-                views=variants(rgb)
+            if state["state"]!="UNOPENED":
                 for backend in backends:
                     if selected and backend.name not in selected:
                         continue
                     tick=time.perf_counter()
-                    if backend.status!="ready":
+                    if backend.status not in ("ready","benchmark_only"):
                         output=EngineResult(backend.name,status=backend.status,reason=backend.reason).as_dict()
                     else:
                         try:
                             output=backend.recognize(views,rows*cols).as_dict()
+                            if output["candidates"] and hasattr(backend,"readiness"):
+                                backend.readiness["inference_tested"]=True
                         except Exception as exc:
                             output=EngineResult(backend.name,status="not_ready",
                                 reason=type(exc).__name__+": "+str(exc)[:200]).as_dict()
+                    output["model_version"]=getattr(backend,"model_version",None)
+                    output["artifact_sha256"]=getattr(backend,"artifact_sha256",None)
                     output["quality"]["engine_fingerprint"]=backend.fingerprint()
                     output["latency_ms"]=(time.perf_counter()-tick)*1000
                     outputs.append(output)
-            ensemble=fusion.fuse([x for x in outputs if not selected or x["engine"] in selected],families,state["quality"])
+            ensemble=fusion.fuse([x for x in outputs if x.get("quality",{}).get("runtime_policy")!="benchmark_only" and (not selected or x["engine"] in selected)],families,state["quality"])
             p={"row":row+1,"col":col+1,"state":state["state"],"quality":state["quality"],
-               "state_method":state["method"],"raw_engines":outputs,"ensemble":ensemble,
+               "state_method":state["method"],"crop_margins":margins,"raw_engines":outputs,"ensemble":ensemble,
                "needs_confirmation":True}
+            if state["state"]=="UNCERTAIN":
+                p["ensemble"]["trust"]="reduced_uncertain_state"
             proposals.append(p)
             if location:
                 cv2.imwrite(str(location/f"{index}.png"),bgr)
     before=[p["ensemble"]["candidates"][0]["value"] for p in proposals if p["ensemble"]["candidates"]]
     duplicates=sorted(k for k,v in Counter(before).items() if v>1)
     constrain(proposals,rows*cols)
+    from .review import apply_review
+    for p in proposals:
+        apply_review(p,rows*cols)
     elapsed=(time.perf_counter()-started)*1000
     result={"status":"needs_confirmation","rows":rows,"cols":cols,
             "cells":[p["value"] for p in proposals],"proposals":proposals,

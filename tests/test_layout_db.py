@@ -29,6 +29,14 @@ async def _scenario():
         try:
             async with app.router.lifespan_context(app):
                 async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url="http://test") as c:
+                    # Existing application routes and database-backed lottery/bingo
+                    # reads must survive the OCR changes.
+                    for page in ("/","/bingo","/predictions","/history/bingo","/analysis/lotto649"):
+                        response=await c.get(page)
+                        assert response.status_code==200,(page,response.text)
+                    for game in ("bingo","lotto649","daily_cash","super_lotto"):
+                        response=await c.get(f"/api/v1/{game}/draws")
+                        assert response.status_code==200,(game,response.text)
                     r=await c.post("/api/v1/layout/predict",json={"rows":1,"cols":4,"cells":[1,None,None,None],"target":3})
                     assert r.status_code==200, r.text
                     prediction=r.json()

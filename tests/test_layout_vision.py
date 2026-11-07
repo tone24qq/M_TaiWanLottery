@@ -34,7 +34,7 @@ def test_numeric_and_nine_views():
     assert numeric("73x",100) is None
     assert numeric("101",100) is None
     assert numeric("0",100) is None
-    assert len(variants(cell()))==9
+    assert {"rgb","grayscale","clahe","otsu","adaptive","inverted","sharpened","denoise","glare_reduced","number_roi","inverted_number_roi"} <= variants(cell()).keys()
 
 
 def test_state_is_independent_of_ocr():
@@ -60,7 +60,7 @@ def test_constraint_corrects_only_opened_supported_values():
     p=[proposal("OPENED",[(13,.48),(73,.45)]),proposal("OPENED",[(13,.97)]),
        proposal("UNOPENED",[(99,.99)]),proposal("UNCERTAIN",[(55,.99)]),proposal("OPENED",[])]
     constrain(p,100)
-    assert [x["value"] for x in p]==[73,13,None,None,None]
+    assert [x["value"] for x in p]==[73,13,None,55,None]
     assert p[0]["corrected"]
     assert p[2]["corrected"] is False
 

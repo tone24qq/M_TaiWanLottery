@@ -64,12 +64,54 @@ Both are ignored by Git. Do not commit private labelled crops or model artifacts
 
 ## Evidence limits
 
-尚無真實照片 accuracy 結論. No real-data ensemble winner or specialist improvement
-is asserted. CPU timings in README are synthetic workload observations, not
-Windows guarantees.
+Real three-photo regression is now measured in docs/layout-real-regression.md.
+There is still no independent validation-selected deployment winner, specialist
+training improvement, or generalization guarantee. Earlier README timings were
+synthetic; new real-photo CPU measurements are Linux observations, not Windows guarantees.
 
 The specialized models train from real corrected sequences and, separately,
 digit components only when component count matches the confirmed sequence.
 Training-only augmentation includes perspective, rotation, blur, motion blur,
 illumination, glare, scratches, partial masks, low resolution, dirt and JPEG
 damage. These augmented images are never a formal accuracy test.
+
+## Additional scene-text recognizers prepared in this task
+
+| Model | Official source / revision | Actual weight bytes | SHA-256 | Policy |
+| --- | --- | ---: | --- | --- |
+| PARSeq tiny | https://github.com/baudm/parseq ; source 1902db043c029a7e03a3818c616c06600af574be ; author release v1.0.0 | 24,136,675 | e7a21b543c98e67414a584c93b1dbb71c26e9463ae4aaa391d54e833660a4711 | Apache-2.0; benchmark_only |
+| CRNN (official PARSeq model hub implementation) | Same pinned source and author release | 33,465,605 | 679d0e315af22d813c6d5a86287ee5705a9a8dfe37378349359442b8b8953264 | Apache-2.0; benchmark_only |
+| Official Tesseract fast English | https://github.com/tesseract-ocr/tessdata_fast ; 87416418657359cb625c412a48b6e1d6d41c29bd | Measured in local artifact inventory | 7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2 | Apache-2.0; existing runtime fallback |
+
+Both scene-text recognizers now actually run the supplied real cell crops through
+BaseCellRecognizer adapters. They expose real Top-K alternatives from multiple
+crops and the digit token lattice (PARSeq lattice alternatives are not claimed
+to be fully autoregressive beam-search probabilities). No model or source tree
+is copied into tracked repository files; explicit preparation caches pinned
+official source and weights below the ignored model directory and verifies them.
+
+The optional stack is requirements-scene-ocr.txt. The verified Python 3.12 Linux
+research execution used timm 0.9.16, pytorch-lightning 2.2.0.post0, torchmetrics 1.3.1,
+lightning-utilities 0.10.1, nltk 3.8.1 and setuptools 80.9.0. The legacy upstream
+stack needs pkg_resources, so using the current setuptools without it fails.
+An isolated --target directory and LAYOUT_OCR_SCENE_DEPENDENCIES avoid changing
+the normal application environment. No Windows scene-stack execution is claimed.
+
+Published weights are author-provided STR models. The upstream code exposes
+real/synthetic scene-text training configurations; the complete exact released
+training-corpus manifest was not independently verified. No claim is made that
+they were trained specifically on scratched lottery cards.
+
+Official PaddleOCR TextRecognition API and its PaddleX hoster resolver were
+actually attempted. Its configured official alternatives are:
+Hugging Face PaddlePaddle/<model>, ModelScope PaddlePaddle/<model>, AIStudio
+PaddleX/<model>, and the documented BOS URL. All hosting destinations are blocked
+by this environment's proxy (403); the GitHub v3.7.0 release contains source archives,
+not recognition weights. Microsoft model-info API likewise returns 403 and no
+TrOCR cache was found. These adapters remain not_ready; installed packages are
+not counted as prepared/inferred models.
+
+The original three photographs are private regression/test inputs, not training
+or model-selection validation. No scene recognizer is promoted into runtime from
+its accuracy on those images. Post-hoc best-single/pair/triple tables are descriptive,
+not validated deployment recommendations.

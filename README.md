@@ -247,17 +247,17 @@ PostgreSQL round trace、揭露後 immutable prediction，以及合成圖片實�
 
 - 統一 recognizer 及 lazy singleton registry：Tesseract、EasyOCR、Paddle 三個
   recognition model、TrOCR small/base、自製 PyTorch CTC／segmented digit CNN。
-  只有 **Tesseract + EasyOCR 已實際載入 pretrained weights 並推論**；
+  **Tesseract、EasyOCR、PARSeq tiny、CRNN 已實際對真實 cell 推論**；後兩者僅 benchmark_only，
   Paddle / TrOCR 權重來源被網路封鎖，保留 adapter，回報 model_missing。
 - 每格產生 RGB、灰階、CLAHE、Otsu、adaptive、inverted、sharpened、denoise、
   glare-reduced 九種版本，先在 engine 內融合。Tesseract 使用 multipage TIFF，
-  一次 subprocess 處理九個版本。Top-K 只保留實際產生的候選，不捏造替代答案。
+  一次 subprocess 處理所有啟用的前處理／ROI 版本。Top-K 只保留實際產生的候選，不捏造替代答案。
 - 獨立視覺 CellStateClassifier 用亮度、飽和度、texture、edge 等特徵判定
-  OPENED / UNOPENED / UNCERTAIN，不參考 OCR。只有 OPENED 辨識數字，其餘保持 unknown。
+  OPENED / UNOPENED / UNCERTAIN，不以 OCR 猜是否刮開。OPENED 和 UNCERTAIN 都辨識；後者降低信任、強制檢查，只有 UNOPENED 完全跳過。
   這是保守 heuristic，尚無訓練完成的 state CNN。
 - 無真實 validation 時採明示的等 family prior；同系 Paddle、TrOCR 及兩個
   Digit 模型共享家族影響力。不同 augmentation 不各拿一票。
-- Global Hungarian 僅使用 OPENED 格已有的合法候選，保留 abstention dummy，
+- Global Hungarian 僅使用 OPENED / UNCERTAIN 格已有的合法候選，保留 abstention dummy，
   不靠缺號猜未開格。無支持候選不得硬分配。低於 .15 abstain、低於 .65 等情形醒目提示，
   是工程 heuristic，不是正確率；保留 raw / ensemble / constrained 結果及修正原因。
 - UI 可只看爭議格，查看引擎候選、最終分數、人工狀態、約束修正、載入時間、
@@ -302,7 +302,7 @@ benchmark 使用真實人工標記資料，依 source-group 分 train/validation
 至少 50 個 validation cells、三個 validation source boards，才保存校正及最佳部署 profile；
 版本／artifact fingerprint 不符時停用舊 profile。不足門檻只報結果，不自動提升。
 
-**尚無真實照片 accuracy 結論**，目前沒有實證最佳 ensemble。
+先前版本只有合成 smoke。現在已完成三張真實 regression 圖的量測，見下方實測文件；仍沒有獨立 validation 選出的正式 ensemble 或泛化保證。
 本機合成 2×2 / 44px 字體 smoke（不是正式 accuracy）：
 Tesseract 原始候選 4/4、EasyOCR 3/4、保守融合填入 3/4、1 格 abstain；
 不把較差或 abstain 的結果美化為提升。
@@ -322,3 +322,48 @@ Digit 尚無足夠真實資料，正式 accuracy / 選型 not_ready。
 Windows 須另裝 Tesseract，並在 shell 設定環境變數。
 已檢查指定套件的 Windows/Python 3.12 wheel resolution，未在 Windows 執行，
 也未完整驗證該平台全部 transitive dependencies。
+
+
+## 真實三圖 regression 與可重現 debug
+
+詳見 [實測報告](docs/layout-real-regression.md)。照片、人工逐格標註、
+baseline/final JSON、CSV、warp、所有 crop/前處理都保存在外部本機 fixture/debug 目錄，
+不包含在 Git commit。正式模型權重及 third-party source cache 也不提交。
+
+    # Core runtime dependencies, then optional scene-text benchmark dependencies.
+    pip install -r requirements.txt
+    pip install -r requirements-scene-ocr.txt
+    python -m taiwan_lottery.ml.layout.vision.prepare tesseract
+    python -m taiwan_lottery.ml.layout.vision.prepare parseq-tiny
+    python -m taiwan_lottery.ml.layout.vision.prepare crnn
+
+使用隔離 --target 安裝 scene stack 時，設 LAYOUT_OCR_SCENE_DEPENDENCIES 指向它。
+正式應用不啟用 LAYOUT_OCR_BENCHMARK，就不載入這兩個額外模型；
+不會因這三張 test 圖上的成績把模型提升為 runtime。
+
+    LAYOUT_OCR_BENCHMARK=1 OMP_NUM_THREADS=2 python -m taiwan_lottery.ml.layout.vision.regression       --fixtures /external/ground_truth.json --images-root /external/images --output /external/debug
+
+fixture JSON 是圖記錄陣列：image（路徑可自行命名）、rows、cols、cells；
+每個 cell 包含 row、col、state、number 或 null、ambiguity，
+可附 corners 作為人工幾何評估參考，及 scenarios。參考 corners **不傳入自動偵測器**。
+保留 split=regression_only；程式不從 filename、image hash、特定座標或答案選推論路徑。
+必須逐格枚舉合法座標，只有 OPENED 可填入不重複 1～N 的確認數字。
+
+新偵測器先找重複覆膜／cell contour 的 projective lattice，以 RANSAC 排除背景雜物；
+再使用 morphology、Hough 與等距格線評分備援，失敗會要求人工角點。
+辨識保留 normal/tighter/looser crop、number ROI、polarity 與可選三階亮度 ink-band 視圖。
+每個數值採最佳兩個原生觀察的平均證據，避免多個相關的壞 thresholding 壓過一個清楚 crop。
+候選保留 Top-K，不把 augmentation 當成不同模型。
+
+約束先依候選與次佳差距保護主證據，再對重複候選的未決格做 Hungarian，
+有 private abstention dummy，不用剩餘數字補猜未開格。底線 .15、備援至少達最佳候選的 75%
+是明示 heuristic，未經真實 validation 校準。單一／不一致證據的 confidence 上限 .79；
+所有原生高分錯讀仍在獨立欄位列出，這不是校準改善或命中率保證。
+某一張圖仍可能因唯一性約束丟掉原本正確的候選，實測不會隱藏這種代價。
+
+    LAYOUT_REAL_REGRESSION_DIR=/external/regression       LAYOUT_TEST_DATABASE=1 SCRAPER_ENABLED=false OMP_NUM_THREADS=2 python -m pytest -q tests
+
+私有目錄包含 ground_truth.json、原圖、baseline_metrics.json、final_metrics.json、
+validation_summary.json。私有 acceptance 按每張檢查不低於 baseline、未開格 false-number=0，
+並檢查全體約束後不低於同一 abstain 政策下的約束前；個別圖片的損失仍完整呈現。
+CI 沒有私有圖片時明確 skip，不能宣稱在 GitHub 跑過實拍 regression。

@@ -46,6 +46,12 @@ class RecognitionConsensus:
                 values[candidate["value"]]+=weights[output["engine"]]*candidate["score"]
         candidates=[{"value":number,"score":float(score)} for number,score in values.items()]
         candidates.sort(key=lambda x:(-x["score"],x["value"]))
+        if candidates:
+            top=candidates[0]["value"]
+            supporters={families.get(x["engine"],x["engine"]) for x in usable if x["candidates"][0]["value"]==top}
+            for candidate in candidates:
+                if len(supporters)<2 or any(x["candidates"][0]["value"]!=top for x in usable):
+                    candidate["score"]=min(candidate["score"],.79)
         tops={x["candidates"][0]["value"] for x in usable}
         return {"candidates":candidates,"confidence":candidates[0]["score"] if candidates else 0,
                 "engines":[x["engine"] for x in usable],"agreement":len(tops)==1,
@@ -54,30 +60,53 @@ class RecognitionConsensus:
 
 
 def constrain(proposals, maximum):
-    opened=[p for p in proposals if p["state"]=="OPENED"]
+    opened=[p for p in proposals if p["state"] in ("OPENED","UNCERTAIN")]
     # A private dummy for every row lets low/no evidence abstain.
     matrix=np.full((len(opened),maximum+len(opened)),-1.0)
     matrix[:,maximum:]=0.0
     for i,p in enumerate(opened):
-        for candidate in p["ensemble"]["candidates"]:
-            if 1<=candidate["value"]<=maximum and candidate["score"]>=.15:
+        candidates=p["ensemble"]["candidates"]
+        best=candidates[0]["score"] if candidates else 0.0
+        abstain=max(.15,best*.75)
+        matrix[i,maximum:]=abstain
+        for candidate in candidates:
+            if 1<=candidate["value"]<=maximum and candidate["score"]>=abstain:
                 matrix[i,candidate["value"]-1]=candidate["score"]
-    if opened:
-        rr,cc=linear_sum_assignment(-matrix)
-        assigned={int(r):int(c) for r,c in zip(rr,cc)}
-    else:
-        assigned={}
+    # Lexicographic objective: first preserve the strongest primary observation
+    # of each value. Global optimization may resolve duplicate losers using
+    # supported alternatives, but cannot displace a stronger primary solely to
+    # increase aggregate coverage with a weaker row.
+    winners={}
     for i,p in enumerate(opened):
-        c=assigned[i]
+        candidates=p["ensemble"]["candidates"]
+        if candidates and candidates[0]["score"]>=.15:
+            number=candidates[0]["value"]
+            margin=candidates[0]["score"]-(candidates[1]["score"] if len(candidates)>1 else 0)
+            previous=winners.get(number)
+            old_candidates=opened[previous]["ensemble"]["candidates"] if previous is not None else []
+            old_margin=(old_candidates[0]["score"]-(old_candidates[1]["score"] if len(old_candidates)>1 else 0)) if old_candidates else -1
+            if previous is None or margin>old_margin:
+                winners[number]=i
+    assigned={row:number-1 for number,row in winners.items()}
+    unresolved=[i for i in range(len(opened)) if i not in assigned]
+    if unresolved:
+        remaining=matrix[unresolved].copy()
+        for number in winners:remaining[:,number-1]=-1
+        rr,cc=linear_sum_assignment(-remaining)
+        assigned.update({unresolved[int(r)]:int(c) for r,c in zip(rr,cc)})
+    for i,p in enumerate(opened):
+        c=assigned.get(i,maximum)
+        p["unconstrained_value"]=(p["ensemble"]["candidates"][0]["value"]
+                                  if p["ensemble"]["candidates"] and p["ensemble"]["candidates"][0]["score"]>=.15 else None)
         p["value"]=c+1 if c<maximum and matrix[i,c]>0 else None
-        p["confidence"]=float(matrix[i,c]) if p["value"] is not None else 0.0
+        p["confidence"]=min(float(matrix[i,c]),.79) if p["state"]=="UNCERTAIN" and p["value"] is not None else float(matrix[i,c]) if p["value"] is not None else 0.0
     for p in proposals:
-        if p["state"]!="OPENED":
+        if p["state"]=="UNOPENED":
             p["value"],p["confidence"]=None,0.0
         raw=p["ensemble"]["candidates"]
         before=raw[0]["value"] if raw else None
         p["ensemble_value"]=before
-        p["corrected"]=before!=p["value"] and p["state"]=="OPENED"
+        p["corrected"]=before!=p["value"] and p["state"] in ("OPENED","UNCERTAIN")
         p["correction_reason"]=("global_unique_number_assignment" if p["value"] is not None else
                                 "abstain_no_supported_unique_value") if p["corrected"] else None
         p["disputed"]=(p["state"]=="UNCERTAIN" or (p["state"]=="OPENED" and

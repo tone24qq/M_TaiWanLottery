@@ -8,20 +8,36 @@ import importlib.util
 from .base import BaseCellRecognizer, EngineResult, numeric
 
 
-def fuse_views(name, readings, maximum, top_k=5, view_count=None):
+def fuse_views(name, readings, maximum, top_k=5, view_count=None, view_names=None, glyph_count=None):
     scores=defaultdict(list)
+    lengths=defaultdict(set)
     for text,score in readings:
         number=numeric(text,maximum)
         if number is not None:
             scores[number].append(max(0.0,min(float(score),1.0)))
+            lengths[number].add(len(str(text).strip()))
     # A preprocessing family contributes one engine result.
     # Repeated views cannot multiply an engine's external voting weight.
-    candidates=[{"value":number,"score":min(1.0,sum(values)/(view_count or len(readings))),
+    # ROI proposals are alternatives, not independent votes. Keep the strongest
+    # two native observations of each value, rather than letting nine correlated
+    # bad thresholdings suppress one clear, high-confidence text crop.
+    candidates=[{"value":number,"score":float(sum(sorted(values,reverse=True)[:2])/min(2,len(values))),
                  "view_support":len(values)}
                 for number,values in scores.items()]
-    candidates.sort(key=lambda x:(-x["score"],x["value"]))
-    return EngineResult(name,candidates[:top_k],[str(t) for t,_ in readings],
-                        {"views":len(readings),"score_kind":"uncalibrated_engine_score"})
+    if candidates and glyph_count:
+        highest=max(c["score"] for c in candidates)
+        compatible=any(glyph_count in lengths[c["value"]] and c["score"]>=highest*.95 for c in candidates)
+        if compatible:
+            for candidate in candidates:
+                if glyph_count not in lengths[candidate["value"]]:
+                    candidate["score"]*=.94
+    candidates.sort(key=lambda x:(-x["score"],-x["view_support"],x["value"]))
+    quality={"views":len(readings),"score_kind":"native_proposal_evidence_not_probability",
+             "aggregation":"mean_of_best_two_views_per_value","visible_digit_count":glyph_count}
+    if view_names:
+        quality["view_results"]=[{"view":label,"raw_text":str(t),"score":float(score)}
+                                 for label,(t,score) in zip(view_names,readings)]
+    return EngineResult(name,candidates[:top_k],[str(t) for t,_ in readings],quality)
 
 
 def verify_cache(location):
@@ -42,6 +58,14 @@ class TesseractRecognizer(BaseCellRecognizer):
     name=family="tesseract"
 
     def __init__(self):
+        self.tessdata=None
+        root=Path(os.getenv("LAYOUT_OCR_MODEL_DIR","model_artifacts/layout_ocr"))
+        location=root/"tesseract"
+        if (location/"artifact.json").exists():
+            verify_cache(location)
+            self.tessdata=location.resolve()
+            self.artifact_location=location
+            self.artifact_bytes=(location/"eng.traineddata").stat().st_size
         self.status="ready" if shutil.which("tesseract") else "dependency_missing"
         self.reason=None if self.status=="ready" else "tesseract_binary_missing"
 
@@ -54,7 +78,10 @@ class TesseractRecognizer(BaseCellRecognizer):
         with TemporaryDirectory(prefix="cell-ocr-") as directory:
             path=Path(directory)/"views.tiff"
             images[0].save(path,save_all=True,append_images=images[1:],dpi=(300,300))
-            data=pytesseract.image_to_data(str(path),config="--psm 7 -c tessedit_char_whitelist=0123456789",
+            config="--psm 7 -c tessedit_char_whitelist=0123456789"
+            if self.tessdata:
+                config+=' --tessdata-dir "'+str(self.tessdata)+'" -l eng'
+            data=pytesseract.image_to_data(str(path),config=config,
                 output_type=pytesseract.Output.DICT,timeout=8)
         pages=[[] for _ in images]
         for text,confidence,page in zip(data["text"],data["conf"],data["page_num"]):
@@ -62,7 +89,7 @@ class TesseractRecognizer(BaseCellRecognizer):
                 pages[int(page)-1].append((text.strip(),float(confidence)/100))
         readings=[("".join(text for text,_ in row),sum(c for _,c in row)/len(row)) if row else ("",0)
                   for row in pages]
-        return fuse_views(self.name,readings,maximum,top_k)
+        return fuse_views(self.name,readings,maximum,top_k,view_names=list(variants),glyph_count=getattr(variants,"glyph_count",None))
 
 
 class EasyRecognizer(BaseCellRecognizer):
@@ -85,13 +112,14 @@ class EasyRecognizer(BaseCellRecognizer):
 
     def recognize(self, variants, maximum, top_k=5):
         import cv2
-        readings=[]
-        for view in variants.values():
+        readings=[];names=[]
+        for name,view in variants.items():
             gray=cv2.cvtColor(view,cv2.COLOR_RGB2GRAY) if view.ndim==3 else view
             rows=self.reader.recognize(gray,allowlist="0123456789",decoder="beamsearch",
                 beamWidth=5,detail=1,paragraph=False)
-            readings.extend((row[1],row[2]) for row in rows)
-        return fuse_views(self.name,readings or [("",0)],maximum,top_k)
+            found=[(row[1],row[2]) for row in rows] or [("",0)]
+            readings.extend(found);names.extend([name]*len(found))
+        return fuse_views(self.name,readings,maximum,top_k,view_names=names,glyph_count=getattr(variants,"glyph_count",None))
 
 
 class PaddleRecognizer(BaseCellRecognizer):

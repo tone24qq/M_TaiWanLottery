@@ -16,6 +16,18 @@ def hashes(root):
 
 def prepare(name):
     root=model_root();root.mkdir(parents=True,exist_ok=True)
+    if name=="tesseract":
+        revision="87416418657359cb625c412a48b6e1d6d41c29bd"
+        location=root/"tesseract";location.mkdir(parents=True,exist_ok=True)
+        url="https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/"+revision+"/eng.traineddata"
+        urllib.request.urlretrieve(url,location/"eng.traineddata")
+        manifest={"source":url,"revision":revision,"model":"eng","license":"Apache-2.0",
+                  "files":hashes(location)}
+        (location/"artifact.json").write_text(json.dumps(manifest,indent=2))
+        return manifest
+    if name in ("parseq-tiny","crnn"):
+        from .scene import prepare_scene
+        return prepare_scene(root,name)
     if name=="easyocr":
         import easyocr
         easyocr.Reader(["en"],gpu=False,detector=False,recognizer=True,
@@ -61,7 +73,7 @@ def prepare(name):
 
 if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("model",choices=["easyocr","trocr-small","trocr-base","PP-OCRv6_medium_rec",
-                                       "PP-OCRv6_small_rec","en_PP-OCRv5_mobile_rec"])
+    parser.add_argument("model",choices=["tesseract","easyocr","trocr-small","trocr-base","PP-OCRv6_medium_rec",
+                                       "PP-OCRv6_small_rec","en_PP-OCRv5_mobile_rec","parseq-tiny","crnn"])
     args=parser.parse_args()
     print(json.dumps(prepare(args.model),indent=2))

@@ -45,3 +45,9 @@ nul
 # OCR model weights, retained cell crops and human-label artifacts
 /model_artifacts/layout_ocr/
 /model_artifacts/layout_digit_dataset/
+
+# Private real-photo regression inputs and debug crops (external paths preferred)
+/tests/fixtures/layout_real/
+/debug/layout_real/
+/debug/real_image_*/
+/layout_real_3_images.zip

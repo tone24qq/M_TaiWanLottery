@@ -20,7 +20,7 @@
 </div>
 <section id="ocrReview" hidden class="mb-3">
 <h2 class="h5">辨識校正</h2><p id="ocrPerformance" class="small"></p>
-<label><input id="disputedOnly" type="checkbox"> 只看有爭議的格子</label>
+<label><input id="disputedOnly" type="checkbox" checked> 只看有爭議的格子</label>
 <div class="table-responsive" style="max-height:360px"><table class="table table-sm">
 <thead><tr><th>位置</th><th>開格狀態（人工確認）</th><th>辨識值 / 分數</th><th>模型結果</th><th>全表校正</th></tr></thead><tbody id="ocrCells"></tbody></table></div>
 <input id="ocrSourceBoard" class="form-control mb-2" placeholder="同一實體表格請固定使用相同 source board ID，避免訓練/測試洩漏">
@@ -33,7 +33,7 @@
 </section>
 <div class="overflow-auto mb-3"><div id="grid" style="display:grid;gap:4px;min-width:350px"></div></div>
 <label class="form-check mb-3"><input id="confirmed" type="checkbox" class="form-check-input">
-  <span class="form-check-label">已確認尺寸、可見數字及未開格（空白）</span></label>
+  <span class="form-check-label">已核對尺寸及黃色爭議格；空白維持未知</span></label>
 <div class="input-group mb-3">
   <span class="input-group-text">目標數字</span><input id="target" type="number" min="1" value="73" class="form-control">
   <button id="predict" class="btn btn-primary">AI 討論 / 預測</button>

@@ -15,17 +15,11 @@ def rectify(data, rows, cols, corners=None):
     if image is None:
         raise ValueError("Cannot decode image")
     if corners is None:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 60, 180)
-        contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        quads = []
-        for contour in contours:
-            approx = cv2.approxPolyDP(contour, .02*cv2.arcLength(contour, True), True)
-            if len(approx)==4 and cv2.isContourConvex(approx):
-                quads.append(approx.reshape(4,2))
-        if not quads:
-            return {"status":"needs_corners","reason":"select_grid_corners"}
-        corners = max(quads, key=cv2.contourArea).tolist()
+        from .vision.grid import detect_grid
+        detected,diagnostics=detect_grid(image,rows,cols)
+        if detected is None:
+            return diagnostics
+        corners=detected.tolist()
     points = np.asarray(corners, dtype=np.float32)
     if points.shape != (4,2) or not np.isfinite(points).all():
         raise ValueError("Provide exactly four grid corners")
