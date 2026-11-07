@@ -97,3 +97,8 @@ async def predictions_page(request: Request):
 @app.get("/bingo", include_in_schema=False)
 async def bingo_page(request: Request):
     return templates.TemplateResponse("bingo.html", {"request": request})
+
+
+@app.get("/layout", include_in_schema=False)
+async def layout_page(request: Request):
+    return templates.TemplateResponse(request=request, name="layout.html")

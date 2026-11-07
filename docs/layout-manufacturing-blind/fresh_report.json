@@ -1,0 +1,911 @@
+{
+  "assignment": {
+    "changed_right_to_wrong": 110,
+    "corrected_wrong_to_right": 71,
+    "net_gain": -39
+  },
+  "audit": {
+    "all_unknown_counts_80": true,
+    "mask_entropy": "Fresh OS entropy per trial, independent of Calc; no shared per-board seed/mask template sent to predictor",
+    "predictor_input_fields": [
+      "rows",
+      "cols",
+      "cells",
+      "target"
+    ],
+    "predictor_receives_rng_state_or_hidden_values": false,
+    "program_hashes_unchanged": true,
+    "sealed_and_child_exited_before_excel_scoring": 10000,
+    "train_test_and_phase_permutations_disjoint": true
+  },
+  "boards": 1000,
+  "caveat": "LibreOffice Calc recalculation of original XLSX formulas; not Microsoft Excel-native RAND sequence reproduction",
+  "ci": "2000 resamples of manufacturing boards, retaining all 10 within-board masks; percentile 95% CI, additional familywise Top1 CI across 12 methods",
+  "cols": 16,
+  "discussion_effectiveness": "not established; peer influence not enabled without prior validation evidence",
+  "discussion_gain": {
+    "mrr": 0.0,
+    "top1": 0.0,
+    "top3": 0.0,
+    "top5": 0.0
+  },
+  "masks_per_board": 10,
+  "overall": {
+    "assignment": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.1321,
+      "mean_rank_95ci": [
+        38.9943075,
+        41.2873375
+      ],
+      "mean_rank_lift": 0.990916049382716,
+      "mean_rank_random": 40.5,
+      "median_rank": 40.0,
+      "median_rank_95ci": [
+        38.0,
+        42.0
+      ],
+      "mrr": 0.058211147101124336,
+      "mrr_95ci": [
+        0.05421068693291082,
+        0.06275870169705916
+      ],
+      "mrr_lift": 0.9378534289400755,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0076,
+      "top10": 0.1226,
+      "top10_95ci": [
+        0.1117,
+        0.1341
+      ],
+      "top10_hits": 1226,
+      "top10_lift": 0.9808,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0046,
+        0.0114
+      ],
+      "top1_familywise_ci": [
+        0.0037,
+        0.013
+      ],
+      "top1_hits": 76,
+      "top1_lift": 0.6080000000000001,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.033,
+      "top3_95ci": [
+        0.0279975,
+        0.0387
+      ],
+      "top3_hits": 330,
+      "top3_lift": 0.8800000000000001,
+      "top3_random": 0.0375,
+      "top5": 0.0601,
+      "top5_95ci": [
+        0.053,
+        0.0679
+      ],
+      "top5_hits": 601,
+      "top5_lift": 0.9616,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.36800000000000005,
+        0.9120000000000001
+      ]
+    },
+    "association": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.2538,
+      "mean_rank_95ci": [
+        38.8264775,
+        41.7010275
+      ],
+      "mean_rank_lift": 0.9939209876543209,
+      "mean_rank_random": 40.5,
+      "median_rank": 40.5,
+      "median_rank_95ci": [
+        38.0,
+        43.0
+      ],
+      "mrr": 0.06281470567135511,
+      "mrr_95ci": [
+        0.05644880405182494,
+        0.06915272760567477
+      ],
+      "mrr_lift": 1.0120224396094084,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0102,
+      "top10": 0.1356,
+      "top10_95ci": [
+        0.1173,
+        0.15360249999999998
+      ],
+      "top10_hits": 1356,
+      "top10_lift": 1.0848,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0065,
+        0.0141
+      ],
+      "top1_familywise_ci": [
+        0.0053,
+        0.016150625000000036
+      ],
+      "top1_hits": 102,
+      "top1_lift": 0.8160000000000002,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0392,
+      "top3_95ci": [
+        0.0303,
+        0.04790249999999999
+      ],
+      "top3_hits": 392,
+      "top3_lift": 1.0453333333333334,
+      "top3_random": 0.0375,
+      "top5": 0.0708,
+      "top5_95ci": [
+        0.0584975,
+        0.08310249999999998
+      ],
+      "top5_hits": 708,
+      "top5_lift": 1.1328,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.52,
+        1.1280000000000001
+      ]
+    },
+    "catboost": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.1204,
+      "mean_rank_95ci": [
+        39.129665,
+        41.1209025
+      ],
+      "mean_rank_lift": 0.990627160493827,
+      "mean_rank_random": 40.5,
+      "median_rank": 40.0,
+      "median_rank_95ci": [
+        38.0,
+        42.0
+      ],
+      "mrr": 0.06532524722119058,
+      "mrr_95ci": [
+        0.06104777271524259,
+        0.06947451027551954
+      ],
+      "mrr_lift": 1.0524703627008305,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0129,
+      "top10": 0.1347,
+      "top10_95ci": [
+        0.1231,
+        0.1461
+      ],
+      "top10_hits": 1347,
+      "top10_lift": 1.0776,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0103,
+        0.0156
+      ],
+      "top1_familywise_ci": [
+        0.009316458333333333,
+        0.0174
+      ],
+      "top1_hits": 129,
+      "top1_lift": 1.032,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0437,
+      "top3_95ci": [
+        0.0379,
+        0.0492
+      ],
+      "top3_hits": 437,
+      "top3_lift": 1.1653333333333336,
+      "top3_random": 0.0375,
+      "top5": 0.0677,
+      "top5_95ci": [
+        0.06,
+        0.07490249999999998
+      ],
+      "top5_hits": 677,
+      "top5_lift": 1.0832,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.8240000000000001,
+        1.248
+      ]
+    },
+    "discussion": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.0905,
+      "mean_rank_95ci": [
+        38.958732499999996,
+        41.2313125
+      ],
+      "mean_rank_lift": 0.9898888888888888,
+      "mean_rank_random": 40.5,
+      "median_rank": 40.0,
+      "median_rank_95ci": [
+        38.0,
+        42.0
+      ],
+      "mrr": 0.061749970601090276,
+      "mrr_95ci": [
+        0.05777501311710859,
+        0.06615323506466608
+      ],
+      "mrr_lift": 0.9948682434410024,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0115,
+      "top10": 0.1234,
+      "top10_95ci": [
+        0.1121,
+        0.1349
+      ],
+      "top10_hits": 1234,
+      "top10_lift": 0.9872,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0091,
+        0.0141
+      ],
+      "top1_familywise_ci": [
+        0.007916458333333334,
+        0.015950625000000038
+      ],
+      "top1_hits": 115,
+      "top1_lift": 0.92,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0375,
+      "top3_95ci": [
+        0.032097499999999994,
+        0.04310249999999999
+      ],
+      "top3_hits": 375,
+      "top3_lift": 1.0,
+      "top3_random": 0.0375,
+      "top5": 0.0604,
+      "top5_95ci": [
+        0.0533,
+        0.0679
+      ],
+      "top5_hits": 604,
+      "top5_lift": 0.9664,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.7280000000000001,
+        1.1280000000000001
+      ]
+    },
+    "final_consensus": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.0905,
+      "mean_rank_95ci": [
+        38.958732499999996,
+        41.2313125
+      ],
+      "mean_rank_lift": 0.9898888888888888,
+      "mean_rank_random": 40.5,
+      "median_rank": 40.0,
+      "median_rank_95ci": [
+        38.0,
+        42.0
+      ],
+      "mrr": 0.061749970601090276,
+      "mrr_95ci": [
+        0.05777501311710859,
+        0.06615323506466608
+      ],
+      "mrr_lift": 0.9948682434410024,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0115,
+      "top10": 0.1234,
+      "top10_95ci": [
+        0.1121,
+        0.1349
+      ],
+      "top10_hits": 1234,
+      "top10_lift": 0.9872,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0091,
+        0.0141
+      ],
+      "top1_familywise_ci": [
+        0.007916458333333334,
+        0.015950625000000038
+      ],
+      "top1_hits": 115,
+      "top1_lift": 0.92,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0375,
+      "top3_95ci": [
+        0.032097499999999994,
+        0.04310249999999999
+      ],
+      "top3_hits": 375,
+      "top3_lift": 1.0,
+      "top3_random": 0.0375,
+      "top5": 0.0604,
+      "top5_95ci": [
+        0.0533,
+        0.0679
+      ],
+      "top5_hits": 604,
+      "top5_lift": 0.9664,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.7280000000000001,
+        1.1280000000000001
+      ]
+    },
+    "lightgbm": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.5819,
+      "mean_rank_95ci": [
+        39.4947775,
+        41.701365
+      ],
+      "mean_rank_lift": 1.0020222222222221,
+      "mean_rank_random": 40.5,
+      "median_rank": 41.0,
+      "median_rank_95ci": [
+        39.0,
+        43.0
+      ],
+      "mrr": 0.0625799173518811,
+      "mrr_95ci": [
+        0.058729828253745404,
+        0.06697739154864185
+      ],
+      "mrr_lift": 1.0082397099870004,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0118,
+      "top10": 0.1284,
+      "top10_95ci": [
+        0.117195,
+        0.1405025
+      ],
+      "top10_hits": 1284,
+      "top10_lift": 1.0272,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0095,
+        0.0145
+      ],
+      "top1_familywise_ci": [
+        0.008116458333333333,
+        0.01588354166666668
+      ],
+      "top1_hits": 118,
+      "top1_lift": 0.9440000000000001,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0388,
+      "top3_95ci": [
+        0.0335,
+        0.0449
+      ],
+      "top3_hits": 388,
+      "top3_lift": 1.0346666666666668,
+      "top3_random": 0.0375,
+      "top5": 0.0653,
+      "top5_95ci": [
+        0.0579,
+        0.0735
+      ],
+      "top5_hits": 653,
+      "top5_lift": 1.0448,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.76,
+        1.1600000000000001
+      ]
+    },
+    "neural": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.2358,
+      "mean_rank_95ci": [
+        39.1159125,
+        41.3311
+      ],
+      "mean_rank_lift": 0.9934765432098764,
+      "mean_rank_random": 40.5,
+      "median_rank": 40.0,
+      "median_rank_95ci": [
+        38.0,
+        42.0
+      ],
+      "mrr": 0.06065980660010828,
+      "mrr_95ci": [
+        0.05708097705794331,
+        0.06433903136036324
+      ],
+      "mrr_lift": 0.9773043558121972,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0109,
+      "top10": 0.125,
+      "top10_95ci": [
+        0.1153975,
+        0.1349
+      ],
+      "top10_hits": 1250,
+      "top10_lift": 1.0,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0086,
+        0.0134
+      ],
+      "top1_familywise_ci": [
+        0.007616458333333334,
+        0.0143
+      ],
+      "top1_hits": 109,
+      "top1_lift": 0.8720000000000001,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0366,
+      "top3_95ci": [
+        0.032,
+        0.0417
+      ],
+      "top3_hits": 366,
+      "top3_lift": 0.9760000000000001,
+      "top3_random": 0.0375,
+      "top5": 0.063,
+      "top5_95ci": [
+        0.0571975,
+        0.06970249999999999
+      ],
+      "top5_hits": 630,
+      "top5_lift": 1.008,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.6880000000000001,
+        1.072
+      ]
+    },
+    "position": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.3157,
+      "mean_rank_95ci": [
+        38.869350000000004,
+        41.7529925
+      ],
+      "mean_rank_lift": 0.9954493827160493,
+      "mean_rank_random": 40.5,
+      "median_rank": 40.5,
+      "median_rank_95ci": [
+        38.0,
+        43.0
+      ],
+      "mrr": 0.06161223136283807,
+      "mrr_95ci": [
+        0.054786563053877205,
+        0.06878315695789333
+      ],
+      "mrr_lift": 0.992649094303295,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0094,
+      "top10": 0.1339,
+      "top10_95ci": [
+        0.1146975,
+        0.1539
+      ],
+      "top10_hits": 1339,
+      "top10_lift": 1.0712,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0053,
+        0.0139
+      ],
+      "top1_familywise_ci": [
+        0.004116458333333334,
+        0.0159
+      ],
+      "top1_hits": 94,
+      "top1_lift": 0.7520000000000001,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0403,
+      "top3_95ci": [
+        0.029597500000000002,
+        0.05140249999999999
+      ],
+      "top3_hits": 403,
+      "top3_lift": 1.0746666666666669,
+      "top3_random": 0.0375,
+      "top5": 0.0676,
+      "top5_95ci": [
+        0.0539,
+        0.08170249999999998
+      ],
+      "top5_hits": 676,
+      "top5_lift": 1.0816,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.42400000000000004,
+        1.112
+      ]
+    },
+    "round1": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.0905,
+      "mean_rank_95ci": [
+        38.958732499999996,
+        41.2313125
+      ],
+      "mean_rank_lift": 0.9898888888888888,
+      "mean_rank_random": 40.5,
+      "median_rank": 40.0,
+      "median_rank_95ci": [
+        38.0,
+        42.0
+      ],
+      "mrr": 0.061749970601090276,
+      "mrr_95ci": [
+        0.05777501311710859,
+        0.06615323506466608
+      ],
+      "mrr_lift": 0.9948682434410024,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0115,
+      "top10": 0.1234,
+      "top10_95ci": [
+        0.1121,
+        0.1349
+      ],
+      "top10_hits": 1234,
+      "top10_lift": 0.9872,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0091,
+        0.0141
+      ],
+      "top1_familywise_ci": [
+        0.007916458333333334,
+        0.015950625000000038
+      ],
+      "top1_hits": 115,
+      "top1_lift": 0.92,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0375,
+      "top3_95ci": [
+        0.032097499999999994,
+        0.04310249999999999
+      ],
+      "top3_hits": 375,
+      "top3_lift": 1.0,
+      "top3_random": 0.0375,
+      "top5": 0.0604,
+      "top5_95ci": [
+        0.0533,
+        0.0679
+      ],
+      "top5_hits": 604,
+      "top5_lift": 0.9664,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.7280000000000001,
+        1.1280000000000001
+      ]
+    },
+    "similarity_knn": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 39.6776,
+      "mean_rank_95ci": [
+        38.28661,
+        41.1059325
+      ],
+      "mean_rank_lift": 0.9796938271604938,
+      "mean_rank_random": 40.5,
+      "median_rank": 39.0,
+      "median_rank_95ci": [
+        37.0,
+        41.0
+      ],
+      "mrr": 0.06749046640249297,
+      "mrr_95ci": [
+        0.061236977520259125,
+        0.0737496974403843
+      ],
+      "mrr_lift": 1.087354716208993,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0148,
+      "top10": 0.1438,
+      "top10_95ci": [
+        0.1255,
+        0.1628025
+      ],
+      "top10_hits": 1438,
+      "top10_lift": 1.1504,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0105,
+        0.0191
+      ],
+      "top1_familywise_ci": [
+        0.0093,
+        0.020983541666666678
+      ],
+      "top1_hits": 148,
+      "top1_lift": 1.1840000000000002,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0437,
+      "top3_95ci": [
+        0.0355975,
+        0.0523
+      ],
+      "top3_hits": 437,
+      "top3_lift": 1.1653333333333336,
+      "top3_random": 0.0375,
+      "top5": 0.0733,
+      "top5_95ci": [
+        0.0618,
+        0.08560249999999998
+      ],
+      "top5_hits": 733,
+      "top5_lift": 1.1728,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.8400000000000001,
+        1.528
+      ]
+    },
+    "statistical": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 39.9952,
+      "mean_rank_95ci": [
+        38.562292500000005,
+        41.421735
+      ],
+      "mean_rank_lift": 0.9875358024691357,
+      "mean_rank_random": 40.5,
+      "median_rank": 39.0,
+      "median_rank_95ci": [
+        37.0,
+        42.0
+      ],
+      "mrr": 0.0654443004900429,
+      "mrr_95ci": [
+        0.05807675388045507,
+        0.07351624017141495
+      ],
+      "mrr_lift": 1.0543884578076956,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0132,
+      "top10": 0.1381,
+      "top10_95ci": [
+        0.118895,
+        0.1584
+      ],
+      "top10_hits": 1381,
+      "top10_lift": 1.1048,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0075,
+        0.0196
+      ],
+      "top1_familywise_ci": [
+        0.005016458333333334,
+        0.02298354166666668
+      ],
+      "top1_hits": 132,
+      "top1_lift": 1.056,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0438,
+      "top3_95ci": [
+        0.0331975,
+        0.0552
+      ],
+      "top3_hits": 438,
+      "top3_lift": 1.168,
+      "top3_random": 0.0375,
+      "top5": 0.0712,
+      "top5_95ci": [
+        0.057595,
+        0.0862
+      ],
+      "top5_hits": 712,
+      "top5_lift": 1.1392,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.6,
+        1.568
+      ]
+    },
+    "transformer": {
+      "assessment": "NO EVIDENCE ABOVE RANDOM",
+      "boards": 1000,
+      "evidence_above_random": false,
+      "leakage_alert": false,
+      "mean_rank": 40.1677,
+      "mean_rank_95ci": [
+        39.2305925,
+        41.084962499999996
+      ],
+      "mean_rank_lift": 0.9917950617283952,
+      "mean_rank_random": 40.5,
+      "median_rank": 40.0,
+      "median_rank_95ci": [
+        39.0,
+        42.0
+      ],
+      "mrr": 0.05998473424390431,
+      "mrr_95ci": [
+        0.056735980684048816,
+        0.0636833097085343
+      ],
+      "mrr_lift": 0.9664281069221231,
+      "mrr_random": 0.062068490986818964,
+      "samples": 10000,
+      "top1": 0.0107,
+      "top10": 0.1236,
+      "top10_95ci": [
+        0.1145,
+        0.13310249999999998
+      ],
+      "top10_hits": 1236,
+      "top10_lift": 0.9888,
+      "top10_random": 0.125,
+      "top1_95ci": [
+        0.0082,
+        0.0136
+      ],
+      "top1_familywise_ci": [
+        0.007049375,
+        0.014883541666666679
+      ],
+      "top1_hits": 107,
+      "top1_lift": 0.856,
+      "top1_random": 0.012499999999999999,
+      "top3": 0.0351,
+      "top3_95ci": [
+        0.0308,
+        0.0398
+      ],
+      "top3_hits": 351,
+      "top3_lift": 0.936,
+      "top3_random": 0.0375,
+      "top5": 0.0589,
+      "top5_95ci": [
+        0.0530975,
+        0.0656025
+      ],
+      "top5_hits": 589,
+      "top5_lift": 0.9424,
+      "top5_random": 0.0625,
+      "top1_lift_95ci": [
+        0.6560000000000001,
+        1.088
+      ]
+    }
+  },
+  "phase": "fresh",
+  "rows": 10,
+  "target": 73,
+  "trials": 10000,
+  "unknown_count": 80,
+  "visible_count": 80,
+  "paired_board_bootstrap_gains": {
+    "discussion": {
+      "top1": {
+        "gain": 0.0,
+        "95ci": [
+          0.0,
+          0.0
+        ]
+      },
+      "top3": {
+        "gain": 0.0,
+        "95ci": [
+          0.0,
+          0.0
+        ]
+      },
+      "top5": {
+        "gain": 0.0,
+        "95ci": [
+          0.0,
+          0.0
+        ]
+      },
+      "mrr": {
+        "gain": 0.0,
+        "95ci": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "assignment": {
+      "top1": {
+        "gain": -0.0039,
+        "95ci": [
+          -0.0077,
+          0.0002
+        ]
+      },
+      "top3": {
+        "gain": -0.0045,
+        "95ci": [
+          -0.0076,
+          -0.0012
+        ]
+      },
+      "top5": {
+        "gain": -0.0003,
+        "95ci": [
+          -0.0025,
+          0.0021
+        ]
+      },
+      "mrr": {
+        "gain": -0.0035388234999659345,
+        "95ci": [
+          -0.006290526997123877,
+          -0.0005572158514310958
+        ]
+      }
+    }
+  },
+  "exploratory_target_position_uniformity": {
+    "samples": 1000,
+    "chi2": 192.32,
+    "pvalue": 0.03683131635860957,
+    "note": "Descriptive sanity check only; does not certify RAND independence or select models."
+  },
+  "secondary_uncorrected_positive_intervals": [
+    {
+      "engine": "catboost",
+      "metric": "top3"
+    },
+    {
+      "engine": "similarity_knn",
+      "metric": "top10"
+    }
+  ]
+}

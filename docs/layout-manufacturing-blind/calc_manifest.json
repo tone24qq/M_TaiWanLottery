@@ -1,0 +1,62 @@
+{
+  "automatic_calculation": "OOXML calcMode omitted (automatic); every sample additionally forced through hard recalculation",
+  "caveat": "LibreOffice Calc recalculation of original XLSX formulas; not Microsoft Excel-native RAND sequence reproduction",
+  "completion_callbacks_verified": 1000,
+  "count": 1000,
+  "distinct_permutations": 1000,
+  "engine": {
+    "BuildId": "2c87e51eeaa2b413ff4ae097b2705eea1995d8e5",
+    "ProductExtension": ".0.0.alpha0",
+    "ProductName": "LibreOfficeDev",
+    "ProductVersion": "26.8"
+  },
+  "exported_calcPr": {
+    "iterate": "false",
+    "iterateCount": "100",
+    "iterateDelta": "0.0001",
+    "refMode": "A1"
+  },
+  "frozen_values": "D1:D160 read from exported cached XML, immediately copied to immutable values.json before inference",
+  "recalculation": ".uno:CalculateHard before every export; wait for LOK_CALLBACK_UNO_COMMAND_RESULT success=true",
+  "rng_state": "Never set, serialized or exposed to predictor; frozen C values remain scorer-only",
+  "source_audit": {
+    "cached_permutation_verified": true,
+    "cached_rank_matches_random_values": true,
+    "formula_cells_verified": 320,
+    "inference_consequence": "Under independent continuous RAND draws, each hidden target location is exchangeable, conditional on the visible values. No positional method can systematically beat 1/unknown_count without extra information.",
+    "limits": "Formula inspection does not certify PRNG independence or equivalence of spreadsheet engines. Finite RAND ties must be rejected, never silently repaired.",
+    "logical_reshape": {
+      "cols": 16,
+      "order": "D1..D160 row-major, explicitly requested; differs from print layout",
+      "rows": 10
+    },
+    "manufacturing_range": "D1:D160",
+    "mechanism": "actual_manufacturing_RAND_RANK_permutation",
+    "print_layout_array_formulas": {
+      "B3": "隨機產生號碼!D1:D8",
+      "C3": "隨機產生號碼!D9:D16",
+      "D3": "隨機產生號碼!D17:D24",
+      "E3": "隨機產生號碼!D25:D32",
+      "F3": "隨機產生號碼!D33:D40",
+      "G3": "隨機產生號碼!D41:D48",
+      "H3": "隨機產生號碼!D49:D56",
+      "I3": "隨機產生號碼!D57:D64",
+      "J3": "隨機產生號碼!D65:D72",
+      "K3": "隨機產生號碼!D73:D80",
+      "N3": "隨機產生號碼!D81:D88",
+      "O3": "隨機產生號碼!D89:D96",
+      "P3": "隨機產生號碼!D97:D104",
+      "Q3": "隨機產生號碼!D105:D112",
+      "R3": "隨機產生號碼!D113:D120",
+      "S3": "隨機產生號碼!D121:D128",
+      "T3": "隨機產生號碼!D129:D136",
+      "U3": "隨機產生號碼!D137:D144",
+      "V3": "隨機產生號碼!D145:D152",
+      "W3": "隨機產生號碼!D153:D160"
+    },
+    "random_formula": "C1:C160 = RAND()",
+    "rank_formula": "D_i = RANK(C_i,$C$1:$C$160), default descending order",
+    "source_sheet": "隨機產生號碼",
+    "workbook_sha256": "59f284818497545d53e4b08ba915ad45d27e2ea4164df4b8c6aaf434949a5ebe"
+  }
+}

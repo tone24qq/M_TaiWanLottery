@@ -1,0 +1,40 @@
+{
+  "workbook_sha256": "59f284818497545d53e4b08ba915ad45d27e2ea4164df4b8c6aaf434949a5ebe",
+  "source_sheet": "隨機產生號碼",
+  "manufacturing_range": "D1:D160",
+  "random_formula": "C1:C160 = RAND()",
+  "rank_formula": "D_i = RANK(C_i,$C$1:$C$160), default descending order",
+  "mechanism": "actual_manufacturing_RAND_RANK_permutation",
+  "formula_cells_verified": 320,
+  "cached_permutation_verified": true,
+  "cached_rank_matches_random_values": true,
+  "print_layout_array_formulas": {
+    "B3": "隨機產生號碼!D1:D8",
+    "C3": "隨機產生號碼!D9:D16",
+    "D3": "隨機產生號碼!D17:D24",
+    "E3": "隨機產生號碼!D25:D32",
+    "F3": "隨機產生號碼!D33:D40",
+    "G3": "隨機產生號碼!D41:D48",
+    "H3": "隨機產生號碼!D49:D56",
+    "I3": "隨機產生號碼!D57:D64",
+    "J3": "隨機產生號碼!D65:D72",
+    "K3": "隨機產生號碼!D73:D80",
+    "N3": "隨機產生號碼!D81:D88",
+    "O3": "隨機產生號碼!D89:D96",
+    "P3": "隨機產生號碼!D97:D104",
+    "Q3": "隨機產生號碼!D105:D112",
+    "R3": "隨機產生號碼!D113:D120",
+    "S3": "隨機產生號碼!D121:D128",
+    "T3": "隨機產生號碼!D129:D136",
+    "U3": "隨機產生號碼!D137:D144",
+    "V3": "隨機產生號碼!D145:D152",
+    "W3": "隨機產生號碼!D153:D160"
+  },
+  "logical_reshape": {
+    "rows": 10,
+    "cols": 16,
+    "order": "D1..D160 row-major, explicitly requested; differs from print layout"
+  },
+  "inference_consequence": "Under independent continuous RAND draws, each hidden target location is exchangeable, conditional on the visible values. No positional method can systematically beat 1/unknown_count without extra information.",
+  "limits": "Formula inspection does not certify PRNG independence or equivalence of spreadsheet engines. Finite RAND ties must be rejected, never silently repaired."
+}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}圖片表格・AI 討論{% endblock %}
+{% block content %}
+<h1 class="h3">圖片表格・AI 討論</h1>
+<p class="text-muted">每格一個數字，範圍 1～N、不重複。分數是相對排序，不是真實命中率。</p>
+<div class="card card-body mb-3">
+  <div class="row g-2">
+    <label class="col-4">列 rows<input id="rows" type="number" min="1" max="100" value="10" class="form-control"></label>
+    <label class="col-4">欄 columns<input id="cols" type="number" min="1" max="100" value="10" class="form-control"></label>
+    <div class="col-4 d-flex align-items-end"><button id="create" class="btn btn-secondary w-100">建立表格</button></div>
+  </div>
+  <label class="mt-3">照片（先裁至表格，或在照片點選四個表格外角）
+    <input id="photo" type="file" accept="image/*" class="form-control"></label>
+  <canvas id="photoCanvas" class="mt-2" style="max-width:100%;touch-action:manipulation" hidden></canvas>
+  <div class="d-flex gap-2 mt-2"><button id="resetCorners" class="btn btn-sm btn-outline-secondary">清除角點</button>
+    <button id="recognize" class="btn btn-outline-primary">本機圖片辨識</button></div>
+  <label class="form-check mt-2"><input id="retainOCR" class="form-check-input" type="checkbox">
+    <span class="form-check-label">保留本次格子圖片供人工校正與本機訓練（不存 Git）</span></label>
+  <p id="ocrStatus" class="small mt-2">OCR 只提供草稿；遮蓋與反光位置請留空，所有可見數字須人工校正。</p>
+</div>
+<section id="ocrReview" hidden class="mb-3">
+<h2 class="h5">辨識校正</h2><p id="ocrPerformance" class="small"></p>
+<label><input id="disputedOnly" type="checkbox" checked> 只看有爭議的格子</label>
+<div class="table-responsive" style="max-height:360px"><table class="table table-sm">
+<thead><tr><th>位置</th><th>開格狀態（人工確認）</th><th>辨識值 / 分數</th><th>模型結果</th><th>全表校正</th></tr></thead><tbody id="ocrCells"></tbody></table></div>
+<input id="ocrSourceBoard" class="form-control mb-2" placeholder="同一實體表格請固定使用相同 source board ID，避免訓練/測試洩漏">
+<label class="small">人工場景標註（可多選，用於獨立 benchmark）<select id="ocrScenarios" multiple class="form-select form-select-sm">
+<option value="clean">clean</option><option value="glare">glare</option><option value="scratch">scratch</option>
+<option value="blur">blur</option><option value="perspective">perspective</option><option value="low-light">low-light</option></select></label>
+<button id="saveCorrections" class="btn btn-outline-primary">保存已人工確認的格子與標籤</button>
+<button id="ocrBenchmark" class="btn btn-outline-secondary">真實照片 benchmark</button>
+<pre id="ocrBenchmarkResult" class="small mt-2" style="white-space:pre-wrap"></pre>
+</section>
+<div class="overflow-auto mb-3"><div id="grid" style="display:grid;gap:4px;min-width:350px"></div></div>
+<label class="form-check mb-3"><input id="confirmed" type="checkbox" class="form-check-input">
+  <span class="form-check-label">已核對尺寸及黃色爭議格；空白維持未知</span></label>
+<div class="input-group mb-3">
+  <span class="input-group-text">目標數字</span><input id="target" type="number" min="1" value="73" class="form-control">
+  <button id="predict" class="btn btn-primary">AI 討論 / 預測</button>
+</div>
+<p id="status" role="status" aria-live="polite"></p>
+<section id="result" hidden>
+  <h2 class="h4">最終共識</h2><p id="summary"></p>
+  <div id="ranking" class="d-flex flex-wrap gap-2 mb-3"></div>
+  <h2 class="h4">AI 討論</h2>
+  <div class="table-responsive"><table class="table table-sm"><thead><tr><th>模型</th><th>第一輪 → 第二輪</th><th>權重</th><th>理由</th></tr></thead><tbody id="models"></tbody></table></div>
+  <p id="advocate"></p>
+  <details><summary>完整候選排名、全表 assignment、相關矩陣與三輪紀錄</summary><pre id="trace" style="max-height:450px;overflow:auto"></pre></details>
+  <div class="input-group mt-3"><span class="input-group-text">實際揭露位置</span>
+    <input id="actualRow" type="number" placeholder="列" class="form-control" min="1">
+    <input id="actualCol" type="number" placeholder="欄" class="form-control" min="1">
+    <button id="resolve" class="btn btn-outline-secondary">記錄結果</button></div>
+</section>
+<hr>
+<h2 class="h4">完整歷史表格與回測</h2>
+<p class="small">只有人工確認完整的 1～N 排列可加入訓練；未完成照片不能當作完整歷史。來源不可重複。</p>
+<input id="source" placeholder="唯一來源名稱，例如 board-2026-001" class="form-control mb-2">
+<button id="saveHistory" class="btn btn-outline-secondary mb-3">將上方完整表格加入歷史</button>
+<div class="d-flex gap-2"><button id="evaluate" class="btn btn-outline-primary">執行簡短回測（最多 8 張）</button>
+<button id="getEvaluation" class="btn btn-outline-secondary">讀取上次回測</button></div>
+<pre id="evaluation" class="mt-3" style="white-space:pre-wrap"></pre>
+{% endblock %}
+{% block extra_scripts %}<script src="/static/js/layout.js"></script>{% endblock %}

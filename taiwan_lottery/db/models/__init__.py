@@ -16,3 +16,7 @@ __all__ = [
     "MLModelRecord",
     "MLPrediction",
 ]
+
+from taiwan_lottery.db.models.layout import LayoutHistory, LayoutRun
+
+from taiwan_lottery.db.models.layout_digit import LayoutDigitSample

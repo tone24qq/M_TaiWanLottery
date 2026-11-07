@@ -1,0 +1,33 @@
+{
+  "total_trials": 20000,
+  "fresh_unique_boards": 1000,
+  "previous_distinct_technical_and_training_development_permutations_checked": 1110,
+  "fresh_overlap_with_any_previous_snapshot": 0,
+  "train_test_overlap": 0,
+  "all_prediction_seals_before_child_exit_before_scoring": true,
+  "code_hashes_locked": true,
+  "model_hyperparameters_changed": false,
+  "test_driven_model_selection": false,
+  "rng_seed_or_state_in_predictor_requests": false,
+  "full_target_positions_or_hidden_values_in_predictor_requests": false,
+  "all_twelve_methods_ready_and_ranked_80_cells": true,
+  "runtime_models_promoted": [],
+  "alpha_engine_caveat": "LibreOffice Calc recalculation of original XLSX formulas; not Microsoft Excel-native RAND sequence reproduction",
+  "engine": {
+    "BuildId": "2c87e51eeaa2b413ff4ae097b2705eea1995d8e5",
+    "ProductExtension": ".0.0.alpha0",
+    "ProductName": "LibreOfficeDev",
+    "ProductVersion": "26.8"
+  },
+  "python": "3.12.14",
+  "package_versions": {
+    "numpy": "2.3.5",
+    "scipy": "1.18.1",
+    "torch": "2.15.0+cpu",
+    "lightgbm": "4.7.0",
+    "catboost": "1.2.10",
+    "pydantic": "2.14.3"
+  },
+  "guard_limit": "Trusted-model audit boundary, not an OS sandbox against hostile native code",
+  "timing_evidence": "Per-trial seal, waitpid exit proof, immutable answer/score; opt-in acceptance test checks all 20000 traces"
+}
